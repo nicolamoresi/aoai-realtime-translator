@@ -3,8 +3,8 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "environmentName":      { "value": "prod" },
-    "modelName":            { "value": "gpt-realtime" },
-    "modelVersion":         { "value": "2025-08-28" },
+    "modelName":            { "value": "gpt-4o-mini-realtime-preview" },
+    "modelVersion":         { "value": "2024-12-17" },
     "modelDeploymentName":  { "value": "rt-depl" },
     "deploymentSku":        { "value": "GlobalStandard" }
   }
