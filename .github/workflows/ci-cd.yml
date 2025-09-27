@@ -13,30 +13,42 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AZURE_ENV_NAME: prod
-      AZURE_LOCATION: swedencentral
+      AZURE_LOCATION: swedencentral   # consigliata per EU (Realtime support)
     steps:
+      # 1) Checkout
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 2) Node.js + cache npm
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
+      # 3) Dipendenze (senza lock file)
       - name: Install dependencies
         run: npm install
 
+      # 4) Login ad Azure (CLI) con Service Principal JSON (secret AZURE_CREDENTIALS)
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # 4.1) Imposta esplicitamente la subscription per az CLI (evita prompt di selezione)
+      - name: Set Azure subscription for az CLI
+        run: |
+          az account set --subscription ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          az account show
+
+      # 5) Installa azd (Azure Developer CLI)
       - name: Install azd manually
         run: |
           curl -fsSL https://aka.ms/install-azd.sh | bash
           azd version
 
+      # 6) Login azd con lo stesso Service Principal (no interazione)
       - name: Authenticate azd with Service Principal
         run: |
           azd auth login \
@@ -44,12 +56,27 @@ jobs:
             --client-secret ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }} \
             --tenant-id ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
 
+      # 7) Crea/garantisci il Resource Group (idempotente)
+      - name: Ensure Resource Group exists
+        run: |
+          az group create \
+            --name rg-${AZURE_ENV_NAME} \
+            --location $AZURE_LOCATION
+
+      # 8) Provision + Deploy con azd (no prompt, forzando sub e RG)
       - name: Provision and Deploy with azd
         run: |
+          # Crea l'ambiente se non esiste (forza sub e RG per evitare prompt)
           azd env new $AZURE_ENV_NAME \
             --location $AZURE_LOCATION \
             --subscription ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }} \
+            --resource-group rg-${AZURE_ENV_NAME} \
             --no-prompt || true
 
+          # Imposta variabili nell'env azd (usate dai post-hook/Script)
           azd env set AZURE_LOCATION $AZURE_LOCATION
+          azd env set AZURE_SUBSCRIPTION_ID ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
+          azd env set AZURE_RESOURCE_GROUP rg-${AZURE_ENV_NAME}
+
+          # Provision + Deploy idempotente
           azd up --no-prompt --environment $AZURE_ENV_NAME
