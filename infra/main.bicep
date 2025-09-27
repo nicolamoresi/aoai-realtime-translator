@@ -45,11 +45,12 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
-/* Realtime model deployment (SKU al top-level, NON in properties) */
+/* Realtime model deployment (SKU al top-level + capacity) */
 resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
   name: '${aoai.name}/${modelDeploymentName}'
   sku: {
-    name: deploymentSku  // 'GlobalStandard' per Realtime (global deployment)
+    name: deploymentSku   // 'GlobalStandard' per Realtime
+    capacity: 1           // richiesto: 1..30000
   }
   properties: {
     model: {
