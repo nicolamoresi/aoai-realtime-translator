@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <title>Traduzione Live (GPT Realtime)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 24px; }
+      #out { white-space: pre-wrap; border: 1px solid #ddd; padding: 12px; min-height: 160px; }
+      .row { margin: 12px 0; }
+      label { margin-right: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Traduzione Live (GPT Realtime WebRTC)</h1>
+    <div class="row">
+      <label>Lingua destinazione:</label>
+      <select id="targetLang">
+        <option value="it-IT" selected>Italiano</option>
+        <option value="en-US">English (US)</option>
+        <option value="de-CH">Deutsch (CH)</option>
+        <option value="fr-FR">Français</option>
+        <option value="es-ES">Español</option>
+      </select>
+      <label style="margin-left:12px">Voce (opz.):</label>
+      <select id="voice">
+        <option value="">(solo testo)</option>
+        <option value="marin">Marin</option>
+        <option value="cedar">Cedar</option>
+      </select>
+      <button id="btnStart">Avvia</button>
+      <button id="btnStop" disabled>Stop</button>
+    </div>
+
+    <audio id="remoteAudio" autoplay playsinline></audio>
+
+    <h3>Testo tradotto</h3>
+    <div id="out"></div>
+
+    ./webrtc.js</script>
+  </body>
+</html>
