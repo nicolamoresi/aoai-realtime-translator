@@ -13,7 +13,7 @@ services:
           shell: sh
           run: |
             echo "Building app..."
-            zip -r app.zip * .[^.]* -x "*.git*"
+            zip -r app.zip * .[^.]* node_modules -x "*.git*"
         windows:
           shell: pwsh
           run: Compress-Archive -Path * -DestinationPath app.zip
