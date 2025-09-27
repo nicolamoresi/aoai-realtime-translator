@@ -37,6 +37,13 @@ jobs:
           curl -fsSL https://aka.ms/install-azd.sh | bash
           azd version
 
+      - name: Authenticate azd with Service Principal
+        run: |
+          azd auth login \
+            --client-id ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientId }} \
+            --client-secret ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }} \
+            --tenant-id ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
+
       - name: Provision and Deploy with azd
         run: |
           azd env new $AZURE_ENV_NAME --location $AZURE_LOCATION --no-prompt || true
