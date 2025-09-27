@@ -13,7 +13,9 @@ services:
           shell: sh
           run: |
             echo "Building app..."
-            zip -r app.zip * .[^.]* node_modules -x "*.git*"
+            npm install
+            zip -r app.zip * .[^.]* node_modules -x "*.git*" "*.zip"
+
         windows:
           shell: pwsh
           run: Compress-Archive -Path * -DestinationPath app.zip
