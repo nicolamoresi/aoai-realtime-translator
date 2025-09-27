@@ -44,4 +44,6 @@ jobs:
 
       # 6. Provision + Deploy (infra + app)
       - name: Provision and Deploy with azd
-        run: azd up --no-prompt --environment $AZURE_ENV_NAME --location $AZURE_LOCATION
+        run: |
+          azd env set AZURE_LOCATION $AZURE_LOCATION
+          azd up --no-prompt --environment $AZURE_ENV_NAME
