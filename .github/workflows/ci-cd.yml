@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # 4) Login ad Azure (CLI) con Service Principal JSON (secret AZURE_CREDENTIALS)
+      # 4) Login ad Azure (CLI) con Service Principal JSON
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -56,27 +56,34 @@ jobs:
             --client-secret ${{ fromJSON(secrets.AZURE_CREDENTIALS).clientSecret }} \
             --tenant-id ${{ fromJSON(secrets.AZURE_CREDENTIALS).tenantId }}
 
-      # 7) Crea/garantisci il Resource Group (idempotente)
+      # 7) Esporta variabili per azd e disabilita prompt
+      - name: Export azd environment variables
+        run: |
+          echo "AZURE_SUBSCRIPTION_ID=${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}" >> $GITHUB_ENV
+          echo "AZURE_RESOURCE_GROUP=rg-${{ env.AZURE_ENV_NAME }}" >> $GITHUB_ENV
+          echo "AZURE_LOCATION=${{ env.AZURE_LOCATION }}" >> $GITHUB_ENV
+          echo "AZD_PROMPT_DISABLED=true" >> $GITHUB_ENV
+
+      # 8) Crea (o verifica) il Resource Group (idempotente)
       - name: Ensure Resource Group exists
         run: |
           az group create \
-            --name rg-${AZURE_ENV_NAME} \
-            --location $AZURE_LOCATION
+            --name "$AZURE_RESOURCE_GROUP" \
+            --location "$AZURE_LOCATION"
 
-      # 8) Provision + Deploy con azd (no prompt, forzando sub e RG)
+      # 9) Provision + Deploy con azd (no prompt, con sub/RG/location già settati via env)
       - name: Provision and Deploy with azd
         run: |
-          # Crea l'ambiente se non esiste (forza sub e RG per evitare prompt)
-          azd env new $AZURE_ENV_NAME \
-            --location $AZURE_LOCATION \
-            --subscription ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }} \
-            --resource-group rg-${AZURE_ENV_NAME} \
+          # Crea l'ambiente se non esiste (no prompt)
+          azd env new "$AZURE_ENV_NAME" \
+            --subscription "$AZURE_SUBSCRIPTION_ID" \
+            --location "$AZURE_LOCATION" \
             --no-prompt || true
 
-          # Imposta variabili nell'env azd (usate dai post-hook/Script)
-          azd env set AZURE_LOCATION $AZURE_LOCATION
-          azd env set AZURE_SUBSCRIPTION_ID ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }}
-          azd env set AZURE_RESOURCE_GROUP rg-${AZURE_ENV_NAME}
+          # Persisti le variabili nell'env azd (usate dai post-hook/script)
+          azd env set AZURE_LOCATION "$AZURE_LOCATION"
+          azd env set AZURE_SUBSCRIPTION_ID "$AZURE_SUBSCRIPTION_ID"
+          azd env set AZURE_RESOURCE_GROUP "$AZURE_RESOURCE_GROUP"
 
           # Provision + Deploy idempotente
-          azd up --no-prompt --environment $AZURE_ENV_NAME
+          azd up --no-prompt --environment "$AZURE_ENV_NAME"
