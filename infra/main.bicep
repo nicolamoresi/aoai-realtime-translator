@@ -9,9 +9,9 @@ param aoaiName string = 'aoai-${uniqueString(resourceGroup().id)}'
 
 @description('Realtime model name')
 @allowed([
-  'gpt-realtime'                // GA (vedi doc)
-  'gpt-4o-realtime-preview'     // preview
-  'gpt-4o-mini-realtime-preview'// preview, più economico
+  'gpt-realtime'
+  'gpt-4o-realtime-preview'
+  'gpt-4o-mini-realtime-preview'
 ])
 param modelName string = 'gpt-realtime'
 
@@ -25,7 +25,7 @@ var appInsightsName   = 'appi-${uniqueString(resourceGroup().id)}'
 var planName          = 'plan-${uniqueString(resourceGroup().id)}'
 var webAppName        = 'web-${uniqueString(resourceGroup().id)}'
 
-/* Azure OpenAI account */
+/* Azure OpenAI account (regional) */
 resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: aoaiName
   location: location
@@ -38,7 +38,7 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
-/* Deployment del modello Realtime */
+/* Deployment del modello Realtime (usa sku, NON scaleSettings) */
 resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
   name: '${aoai.name}/${modelDeploymentName}'
   properties: {
@@ -48,8 +48,8 @@ resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-0
       format: 'OpenAI'
     }
     raiPolicyName: 'Microsoft.Default'
-    scaleSettings: {
-      scaleType: 'Standard'
+    sku: {
+      name: 'Standard'
     }
   }
   dependsOn: [
@@ -96,7 +96,7 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
       appSettings: [
         { name: 'WEBSITE_RUN_FROM_PACKAGE', value: '1' }
         { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appi.properties.ConnectionString }
-        { name: 'AZURE_OPENAI_DEPLOYMENT', value: modelDeploymentName } // verrà sovrascritto dallo script
+        { name: 'AZURE_OPENAI_DEPLOYMENT', value: modelDeploymentName }
         { name: 'PORT', value: '8080' }
       ]
       alwaysOn: true
