@@ -19,6 +19,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Ensure hook permissions (chmod +x)
+        run: chmod +x infra/scripts/postprovision.sh
+
+
       # 2) Node.js + cache npm
       - name: Setup Node.js
         uses: actions/setup-node@v4

@@ -16,7 +16,7 @@ hooks:
   postprovision:
     posix:
       shell: sh
-      run: ./infra/scripts/postprovision.sh
+      run: sh ./infra/scripts/postprovision.sh   # <<— usa "sh script.sh"
     windows:
       shell: pwsh
-      run: ./infra/scripts/postprovision.ps1 # non fornito, usare WSL/posix
+      run: ./infra/scripts/postprovision.ps1     # (se in futuro vorrai uno script PS1)
