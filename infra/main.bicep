@@ -21,7 +21,7 @@ param modelVersion string = '2025-08-28'
 @description('Deployment name for the Realtime model')
 param modelDeploymentName string = 'rt-depl'
 
-@description('SKU for the model deployment (Global deployments require GlobalStandard)')
+@description('SKU for the model deployment (Realtime richiede GlobalStandard)')
 @allowed([
   'GlobalStandard'
   'Standard'
@@ -45,9 +45,12 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
-/* Realtime model deployment (use sku, NOT scaleSettings) */
+/* Realtime model deployment (SKU al top-level, NON in properties) */
 resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
   name: '${aoai.name}/${modelDeploymentName}'
+  sku: {
+    name: deploymentSku  // 'GlobalStandard' per Realtime (global deployment)
+  }
   properties: {
     model: {
       name: modelName
@@ -55,9 +58,6 @@ resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-0
       format: 'OpenAI'
     }
     raiPolicyName: 'Microsoft.Default'
-    sku: {
-      name: deploymentSku
-    }
   }
   dependsOn: [
     aoai
