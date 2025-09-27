@@ -1,0 +1,22 @@
+name: aoai-realtime-translator
+metadata:
+  template: aoai-realtime-translator@1.0.0
+
+services:
+  web:
+    project: .
+    language: js
+    host: appservice
+
+infra:
+  provider: bicep
+  path: infra
+
+hooks:
+  postprovision:
+    posix:
+      shell: sh
+      run: ./infra/scripts/postprovision.sh
+    windows:
+      shell: pwsh
+      run: ./infra/scripts/postprovision.ps1 # non fornito, usare WSL/posix
