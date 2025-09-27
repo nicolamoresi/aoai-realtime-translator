@@ -46,6 +46,10 @@ jobs:
 
       - name: Provision and Deploy with azd
         run: |
-          azd env new $AZURE_ENV_NAME --location $AZURE_LOCATION --no-prompt || true
+          azd env new $AZURE_ENV_NAME \
+            --location $AZURE_LOCATION \
+            --subscription ${{ fromJSON(secrets.AZURE_CREDENTIALS).subscriptionId }} \
+            --no-prompt || true
+
           azd env set AZURE_LOCATION $AZURE_LOCATION
           azd up --no-prompt --environment $AZURE_ENV_NAME
