@@ -97,6 +97,10 @@ resource web 'Microsoft.Web/sites@2023-12-01' = {
   identity: {
     type: 'SystemAssigned'
   }
+  tags: {
+    'azd-env-name': environmentName
+    'azd-service-name': 'web'   // <<--- TAG OBBLIGATORIO
+  }
   properties: {
     serverFarmId: plan.id
     siteConfig: {
