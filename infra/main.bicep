@@ -15,17 +15,24 @@ param aoaiName string = 'aoai-${uniqueString(resourceGroup().id)}'
 ])
 param modelName string = 'gpt-realtime'
 
-@description('Realtime model version (vedi pagina modelli)')
+@description('Realtime model version')
 param modelVersion string = '2025-08-28'
 
-@description('Deployment name per il modello Realtime')
+@description('Deployment name for the Realtime model')
 param modelDeploymentName string = 'rt-depl'
 
-var appInsightsName   = 'appi-${uniqueString(resourceGroup().id)}'
-var planName          = 'plan-${uniqueString(resourceGroup().id)}'
-var webAppName        = 'web-${uniqueString(resourceGroup().id)}'
+@description('SKU for the model deployment (Global deployments require GlobalStandard)')
+@allowed([
+  'GlobalStandard'
+  'Standard'
+])
+param deploymentSku string = 'GlobalStandard'
 
-/* Azure OpenAI account (regional) */
+var appInsightsName = 'appi-${uniqueString(resourceGroup().id)}'
+var planName        = 'plan-${uniqueString(resourceGroup().id)}'
+var webAppName      = 'web-${uniqueString(resourceGroup().id)}'
+
+/* Azure OpenAI account (S0) */
 resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: aoaiName
   location: location
@@ -38,7 +45,7 @@ resource aoai 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
-/* Deployment del modello Realtime (usa sku, NON scaleSettings) */
+/* Realtime model deployment (use sku, NOT scaleSettings) */
 resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
   name: '${aoai.name}/${modelDeploymentName}'
   properties: {
@@ -49,7 +56,7 @@ resource aoaiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-0
     }
     raiPolicyName: 'Microsoft.Default'
     sku: {
-      name: 'Standard'
+      name: deploymentSku
     }
   }
   dependsOn: [
